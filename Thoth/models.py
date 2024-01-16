@@ -6,14 +6,12 @@ from django.utils.timezone import now
 import                            uuid
 import                            os
 from django.utils.html import     mark_safe
-from config.models import         JobPosition, PaymentMethod
+
 from django.urls import reverse
 import qrcode
 from django.urls import reverse
 
 # GLobal Vars
-app_label = "Thoth"
-HOST = os.environ.get("HOST", "http://127.0.0.1:8000/")
 
 # Models
 # ________________________
@@ -40,7 +38,7 @@ class Course(models.Model):
   Day_per_week= models.ManyToManyField("config.Days", related_name="Days", blank=True,verbose_name="كم يوما فلأسبوع")
   Voucher     = models.FloatField( blank=True, default=0, verbose_name=" تكلفة الدرس على الاستاذ")
 
-  groups      = models.ManyToManyField("config.CourseGroup", related_name="Group", blank=True, verbose_name="المجموعات")
+
   # 
   
   def save(self):
@@ -125,14 +123,14 @@ class Course(models.Model):
   class Meta:
     verbose_name = 'الدرس'
     verbose_name_plural = "الدروس"
+  
 class Client(models.Model):
   # 
   name           = models.CharField(max_length=255, verbose_name="اسم الطالب/ة")
   phone_number   = models.CharField(max_length=255, verbose_name="رقم الهاتف")
-  
   paid           = models.IntegerField(default=0, blank=True, verbose_name="المبلغ الذي تم دفعة")
   have_debt      = models.BooleanField(default=True, verbose_name="مدين؟")
-  payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="طريقة الدفع")
+  courses        = models.ManyToManyField(Course, verbose_name="الدروس", blank=True, )
   voucher        = models.FloatField(default=0, blank=True, verbose_name="الخصومات")
   time_added     = models.DateField(default=datetime.datetime.now,  verbose_name="وقت اضافة الطالب",)
   myqr           = models.ImageField(upload_to="clientqrcodes", blank=True, editable=False,)
@@ -143,11 +141,10 @@ class Client(models.Model):
     return "-".join(str(self.time_added).split('-')[:-1])
   # 
   def total(self):
-    cost  = ClintCourses.objects.filter(the_client=self)
     result= 0
-    for i in cost:
-      if i.the_course is not  None:
-        result += i.the_course.cost_forone
+    for i in self.courses.all():
+
+        result += i.cost_forone
     if self.voucher == 0 or self.voucher == None:
       
       return result
@@ -393,11 +390,11 @@ class Employee(models.Model):
   state_of_marrieg = models.CharField(choices=choices, verbose_name="الحالة الاجتماعية", max_length=300)
   phone_number     = models.CharField(max_length=20, verbose_name="رقم الهاتف", blank=True, null=True)
   phone_number_eme = models.CharField(max_length=20, verbose_name="رقم الهاتف فحالة طارئة", blank=True, null=True)
-  job_postition    = models.ForeignKey(JobPosition, null=True, on_delete=models.SET_NULL, blank=True, verbose_name="المنصب الوظيفي")
+  job_postition    = models.CharField(max_length=255, null=True,blank=True, verbose_name="المنصب الوظيفي")
   more             = models.CharField(editable=False, default="المزيد",max_length=10)
   # 
   def image_tag(self):
-    return mark_safe(f'<img style="width:200px;hieght:200px" src="{HOST[:-1]}{ self.img.url}" />' )
+    return mark_safe(f'<img style="width:200px;hieght:200px" src="{ self.img.url}" />' )
   # 
   def __str__(self):
     return f"{self.name}"

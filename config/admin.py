@@ -1,10 +1,10 @@
 from django.contrib import admin
 from Thoth.admin    import final_boss
 from .models        import (
-  JobPosition,
+
   
   Days,
-  CourseGroup,
+
   CashOut,
   PaymentMethod
   )
@@ -35,19 +35,17 @@ except :
 
 
 
-class JobPosAdminStyle(admin.ModelAdmin):
-  
-  list_display  = ("job_title",)
-  search_fields= ("job_title",)
+
 
 class CashOutAdminStyle(admin.ModelAdmin):
   list_display = ("Amount", "description", "time_added")
+  
 
 
-final_boss.register(JobPosition, JobPosAdminStyle)
+
 
 final_boss.register(PaymentMethod)
-final_boss.register(CourseGroup)
+
 final_boss.register(CashOut, CashOutAdminStyle)
 
 

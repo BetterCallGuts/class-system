@@ -1,14 +1,11 @@
 from threading                     import Thread
 from django.contrib                import admin
 from django.contrib                import messages
-from django.shortcuts              import redirect
-from config.models                 import CourseGroup
-from django.views.decorators.cache import never_cache
+
 from django.utils.html             import mark_safe
 from django.contrib.auth.models    import User, Group
 from django.contrib.auth.admin     import UserAdmin, GroupAdmin
-from django.conf                   import settings
-from django.conf.urls.static       import static
+
 from .models                       import (
 Course,   Client,
 Employee, vacation,
@@ -84,10 +81,10 @@ class WithAlertAdminPage(admin.sites.AdminSite):
         
         
     def index(self, request, extra_context=None):
-        self.cheking_the_debt(request)
-        # self.cheking_the_day(request)
-        t1 = Thread(target=self.checking_valid)
-        t1.start()
+        # self.cheking_the_debt(request)
+        # # self.cheking_the_day(request)
+        # t1 = Thread(target=self.checking_valid)
+        # t1.start()
 
           
         
@@ -106,35 +103,6 @@ final_boss = WithAlertAdminPage()
 
 # Custom Filters
 # _____________________________
-
-class FilterClientByGroups(admin.SimpleListFilter):
-
-  title          = "الفئات"
-  parameter_name = "Group"
-
-  def lookups(self, req, model_admin):
-    i = CourseGroup.objects.all()
-    
-    x = ((s.name, f"{s.name}")  for s in i )
-
-    return x
-
-  def queryset(self, req, queryset):
-    list_that_will_be_returned = []
-
-    x = ClintCourses.objects.all()
-    if self.value():
-      for i in queryset:
-        
-        
-        courses_that_client_in = x.filter(the_client=i)
-        for k in courses_that_client_in:
-          if k.th_group.name == self.value():
-            list_that_will_be_returned.append(i.id)
-            break
-        
-      return queryset.filter(id__in=list_that_will_be_returned)
-      
 
 
 
@@ -237,10 +205,12 @@ class ClientScoresInLine(admin.StackedInline):
 
 
 class ClientAdmin(admin.ModelAdmin):
-  fields       = (
+  fieldsets = (
+    
+  ("معلومات الطالب" ,{"fields"       : (
     "name",
     "phone_number",
-    "payment_method",
+    "courses",
     "total",
     "paid",
     "voucher",
@@ -248,7 +218,11 @@ class ClientAdmin(admin.ModelAdmin):
     "time_added",
     "myqr_code",
     'Attnder',
-      )
+    
+      )},
+   ),
+  
+  )
   change_list_template = "change_list.html"
   readonly_fields = (
     "total",
@@ -281,7 +255,7 @@ class ClientAdmin(admin.ModelAdmin):
   list_display_links = ("more",)
   list_filter        = (
         'have_debt', 
-        FilterClientByGroups,
+       
         
         FilterClientByTimeAdded
         )
@@ -355,10 +329,7 @@ class CourseAdminStyle(admin.ModelAdmin):
     
   )
   
-  list_filter = (
-    "groups",
-    
-  )
+  
   search_fields = (
     "course_name",
     "cost_forone",
@@ -367,7 +338,7 @@ class CourseAdminStyle(admin.ModelAdmin):
   fields = (
     "course_name",
     "Day_per_week",
-    "groups",
+
     "cost_forone",
     "Voucher",
     "start_date",
