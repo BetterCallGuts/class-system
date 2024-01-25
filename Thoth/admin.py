@@ -10,8 +10,8 @@ from .models                       import (
 Course,   Client,
 Employee, vacation,
 Absent,   Deduction, 
-Reward,   
-ClintCourses,
+Reward,   ClientCourseRel,
+
 ClientScore,
 Parentsphonenumbers
 
@@ -147,7 +147,7 @@ class VacationInLine(admin.StackedInline):
   verbose_name_plural = 'عطلات الموظف'
   verbose_name = 'عطلة'
 
-  
+
 class parentphonenumberinline(admin.StackedInline):
   model = Parentsphonenumbers
   extra = 0
@@ -162,6 +162,12 @@ class DeductionInLine(admin.StackedInline):
   verbose_name_plural = "خصومات من الموظف"
 
 
+class ClientCourseRelInline(admin.StackedInline):
+  model  = ClientCourseRel
+  extra  = 0
+  verbose_name = "درس الطالب"
+  verbose_name_plural = "دروس الطلبة"
+
 class AbsentInLine(admin.StackedInline):
   model = Absent
   extra = 0
@@ -175,16 +181,6 @@ class RewardInLine(admin.StackedInline):
   verbose_name_plural = "جوائز الموظف"
 
 
-class ClintCoursesInLine(admin.TabularInline):
-  model = ClintCourses
-  # fields= ("the_course",'client_score')
-  exclude=('Atten',)
-  extra = 0
-  
-  verbose_name = "درس"
-  verbose_name_plural = "دروس الطالب/ة"
-
-
 
 class ClientScoresInLine(admin.StackedInline):
   model = ClientScore
@@ -192,10 +188,6 @@ class ClientScoresInLine(admin.StackedInline):
   
   verbose_name = "نتيجة"
   verbose_name_plural = "نتائج الطالب/ة"
-
-
-
-
 
 
 
@@ -210,7 +202,6 @@ class ClientAdmin(admin.ModelAdmin):
   ("معلومات الطالب" ,{"fields"       : (
     "name",
     "phone_number",
-    "courses",
     "total",
     "paid",
     "voucher",
@@ -260,9 +251,10 @@ class ClientAdmin(admin.ModelAdmin):
         FilterClientByTimeAdded
         )
   inlines = (
-    ClintCoursesInLine,
+    
+    ClientCourseRelInline,
+    parentphonenumberinline,
     ClientScoresInLine,
-    parentphonenumberinline
 
   )
 # ________________
@@ -343,17 +335,18 @@ class CourseAdminStyle(admin.ModelAdmin):
     "Voucher",
     "start_date",
     "end_date",
+    "attend_grid",
     "income_for_one_month",
     "clients_in_course_this_month",
     "clients_in_course",
     "income",
-    
   )
   readonly_fields = (
     "clients_in_course",
     "income",
     "income_for_one_month",
     "clients_in_course_this_month",
+    "attend_grid"
 
   )
 # _____________________________

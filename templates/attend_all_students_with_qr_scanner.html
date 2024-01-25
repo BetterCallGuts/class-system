@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>attendance</title>
+    <style>
+            
+        body{
+            height: 90vh;
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+            background-color: gray;
+            }
+        form{
+            background: white;
+            padding: 50px;
+            margin: 20px ;
+            width: 60vw;
+            border-radius: 6px;
+
+            /* padding-left: 200px; */
+
+
+            box-shadow: 0 0 10px black;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            
+        }
+        form div{
+            display: flex;
+            justify-content: center;
+            text-align: center;
+
+        }
+        input[type=submit]{
+            background: #28A745;
+            border: 0;
+            outline: 0;
+            padding: 20px 50px;
+            color: white;
+            font-weight: 500;
+            font-size: 24px;
+            box-shadow: 0 0 5px black;
+            border-radius: 4px;
+        }
+        input[type=submit]:hover{
+            background-color:#28a746bf ;
+        }   
+
+        
+        div.days{
+        width: fit-content;
+        }
+
+        .qrcode_scanner_field{
+          padding: 20px 40px;
+          font-size: 2rem;
+        }
+        div.msg{
+          padding: 10px 20px;
+          color: aliceblue;
+          border-radius: 6px;
+
+        }
+        .success{
+          background: #28A745;
+          transition: .4s;
+
+        }
+        .success:hover{
+          transform: scale(1.04);
+        }
+        .error {
+          background: #dc3545;
+          transition: .4s;
+        } 
+        .error:hover{
+          transform: scale(1.04);
+        }
+        .back__btn{
+          text-decoration: none;
+          color: white;
+          padding: 10px 20px;
+          background: #28A745;
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          border-radius: 6px;
+          box-shadow: 0 0 10px black;
+        }
+    </style>
+</head>
+<body>
+
+  <a href="/Caffe/Thoth/client/" class="back__btn">الوراء</a>
+  <form method="post" >
+  {% if messages %}
+    {% for i in messages %}
+      <div class="msg  {% if i.tags == 'success' %}
+        success
+      {% endif %}
+      {% if i.tags == 'error' %}
+        error
+      {% endif %}
+      
+      ">
+        
+        {{i}}
+      </div>
+    {% endfor %}
+  {% endif %}
+        {% csrf_token %}
+        <input class="qrcode_scanner_field" type="text" required placeholder="افحص كود الطالب" name="pk_for_student">
+        <input  class="qrcode_scanner_submit"  type="submit" value="ارسل الكود ليتم تسجيل حضوره اليوم" />
+    </form>
+
+    <script>
+      ele = document.querySelectorAll(".msg")
+
+      for (i of ele) {
+        
+        i.addEventListener("click" , ()=>{
+          i.remove()
+        })
+      }
+    </script>
+
+</body>
+</html>

@@ -9,6 +9,8 @@ from django.utils.html import     mark_safe
 
 from django.urls import reverse
 import qrcode
+
+from barcode import EAN13 
 from django.urls import reverse
 
 # GLobal Vars
@@ -16,6 +18,18 @@ from django.urls import reverse
 # Models
 # ________________________
 
+
+class ClientCourseRel(models.Model):
+  course = models.ForeignKey("Course", on_delete=models.CASCADE, verbose_name="الدرس")
+  client = models.ForeignKey("Client", on_delete=models.CASCADE, verbose_name="الطالب")
+  rel_date = models.DateField(default=datetime.datetime.now, editable=False)
+  attend   = models.TextField(editable=False, blank=True, null=True)
+  class Meta:
+    verbose_name        = "درس الطالب"
+    verbose_name_plural = "دروس الطالب"
+
+  def __str__(self):
+    return f"{self.client.name}"
 
 class Parentsphonenumbers(models.Model):
   
@@ -28,6 +42,7 @@ class Parentsphonenumbers(models.Model):
   class Meta:
     verbose_name = "رقم ولي الأمر"
     verbose_name_plural = "ارقام أولياء الأمور"
+
 class Course(models.Model):
   # 
   course_name = models.CharField(max_length=255, verbose_name="اسم الدرس")
@@ -56,23 +71,22 @@ class Course(models.Model):
   
   def income(self):
     pple  = float(self.clients_in_course())
-    pple_in_course = ClintCourses.objects.filter(the_course=self)
+    pple_in_course = ClientCourseRel.objects.filter(course=self)
     result =  ((pple) * self.cost_forone) - self.Voucher
     dont_repeat = []
     for i in pple_in_course:
       if i not in dont_repeat:
-        result -= i.the_client.voucher
+        result -= i.client.voucher
         dont_repeat.append(i)
 
     return result
-  def lll(self):
-    result = 3
-    return result
-
+  
+  
+  
+  
   def income_for_one_month(self):
     pple  = float(self.clients_in_course_this_month())
-    
-    pple_in_course = ClintCourses.objects.filter(the_course=self)
+    pple_in_course = ClientCourseRel.objects.filter(course=self)
     
     result =  ((pple) * self.cost_forone) - self.Voucher
     dont_repeat = []
@@ -80,7 +94,7 @@ class Course(models.Model):
 
     for i in pple_in_course:
       if i not in dont_repeat:
-          result -= i.the_client.voucher
+          result -= i.client.voucher
           dont_repeat.append(i)
 
     return result
@@ -91,15 +105,18 @@ class Course(models.Model):
     return "المزيد"
   # 
   def clients_in_course(self):
-    pple = ClintCourses.objects.filter(the_course=self)
+    
+    pple = ClientCourseRel.objects.filter(course=self)
     return f"{len(pple) }"
+# 
   def clients_in_course_this_month(self):
-    pple = ClintCourses.objects.filter(the_course=self)
+    
+    pple = ClientCourseRel.objects.filter(course=self)
     start= datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, 1)
     end  = datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day)
     l    = []
     for i in pple:
-      if start <= i.date_for <= end:
+      if start <= i.rel_date <= end:
         l.append(i)
     return f"{len(l) }"
 
@@ -120,17 +137,33 @@ class Course(models.Model):
   clients_in_course_this_month.short_description = "عدد طلاب الدرس هذا الشهر"
   more.short_description = "انقر للمزيد"
 
+  def attend_grid(self):
+    if self.pk is None:
+      return " - "
+    link = f'''
+    <a  class="random_attend_class" target="popup" href="{reverse("attend-grid-course", args=(self.pk,))}" >انقر لرؤية حضور الطلاب</a>
+    <script> 
+    link__my_random = document.querySelector(".random_attend_class")
+    ''' +'''
+    
+    
+    link__my_random.addEventListener('click', ()=>{
+            window.open(link__my_random.getAttribute("href"), 'popup',' width=600,height=600'); return false; 
+        })
+    </script>
+    '''
+    return mark_safe(link)
+  attend_grid.short_description = " حضور الطلاب "
   class Meta:
     verbose_name = 'الدرس'
     verbose_name_plural = "الدروس"
-  
+
+# 
 class Client(models.Model):
-  # 
   name           = models.CharField(max_length=255, verbose_name="اسم الطالب/ة")
   phone_number   = models.CharField(max_length=255, verbose_name="رقم الهاتف")
   paid           = models.IntegerField(default=0, blank=True, verbose_name="المبلغ الذي تم دفعة")
   have_debt      = models.BooleanField(default=True, verbose_name="مدين؟")
-  courses        = models.ManyToManyField(Course, verbose_name="الدروس", blank=True, )
   voucher        = models.FloatField(default=0, blank=True, verbose_name="الخصومات")
   time_added     = models.DateField(default=datetime.datetime.now,  verbose_name="وقت اضافة الطالب",)
   myqr           = models.ImageField(upload_to="clientqrcodes", blank=True, editable=False,)
@@ -142,9 +175,9 @@ class Client(models.Model):
   # 
   def total(self):
     result= 0
-    for i in self.courses.all():
+    for i in ClientCourseRel.objects.filter(client=self):
 
-        result += i.cost_forone
+        result += i.course.cost_forone
     if self.voucher == 0 or self.voucher == None:
       
       return result
@@ -154,7 +187,7 @@ class Client(models.Model):
   def myqr_code(self):
     
     if self.myqr== "" and self.pk is not None:
-      res = qrcode.make(reverse("attend-with-pk",args=[self.pk]))
+      res = qrcode.make(self.pk)
       
       res.save(f"mediaRoot/clientqrcodes/{self.name}|{self.pk}.png")
       
@@ -185,6 +218,7 @@ class Client(models.Model):
     else:
       self.have_debt = True
     super().save()
+    
   # 
   class Meta:
     verbose_name = "الطالب/ة"
@@ -207,7 +241,7 @@ class Client(models.Model):
   more.short_description   = "انقر للمزيد"
   
   def Attnder(self):
-    my_ = ClintCourses.objects.filter(the_client=self)
+    my_ = ClientCourseRel.objects.filter(client=self)
 
     div = '''
     
@@ -219,7 +253,7 @@ class Client(models.Model):
 
       try:
         
-        days = i.Atten.split(',')
+        days = i.attend.split(',')
       except:
         days = None
       
@@ -227,23 +261,23 @@ class Client(models.Model):
         days_html = f"""
       <hr>
       <h2>
-        {i.the_course.course_name}
+        {i.course.course_name}
       </h2> 
       <a 
         href='{reverse("attend",args=(i.pk,))}' 
         target='popup'
         >
-          Edit it
+          انقر للتعديل على الحضور
         </a>
         <br>
-        You havn't set it up yet  
+        لم يتم حضور اي يوم
         <hr
         > <br>"""
      
       
 
       if days is not None:
-        the_cours_name = i.the_course.course_name
+        the_cours_name = i.course.course_name
         days_html = f''' 
         
         <hr>
@@ -254,7 +288,7 @@ class Client(models.Model):
         href='{reverse("attend",args=(i.pk,))}' 
         target='popup'
         >
-          Edit it
+          التعديل
         </a>
         '''
         for m in days:
@@ -292,21 +326,6 @@ class ClientScore(models.Model):
   class Meta:
     verbose_name = "نتيجة الطالب"
     verbose_name_plural = "نتائج الطلاب"
-class ClintCourses(models.Model):
-  
-  the_course = models.ForeignKey(Course, on_delete=models.CASCADE,verbose_name="اسم الدرس")
-  the_client = models.ForeignKey(Client, on_delete=models.CASCADE,)
-
-  Atten      = models.TextField(blank=True, null=True)
-  date_for   = models.DateField( default=datetime.datetime.now, editable=False)
-
-  class Meta:
-    
-    verbose_name        = "درس الطالب"
-    verbose_name_plural = "دروس الطلاب"
-  def __str__(self):
-    return f"{self.the_course}"
-
 
 class vacation(models.Model):
   
@@ -405,7 +424,3 @@ class Employee(models.Model):
   
   image_tag.short_description = 'صورة الموظف'
   image_tag.allow_tags = True
-
-
-
-# 

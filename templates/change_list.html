@@ -4,7 +4,10 @@
 
 {% block object-tools-items %}
 {{ block.super }} 
-<li style="list-style: none;">
+<li style="list-style: none;margin-right: 5px;">
     <a href="{% url 'refresh_clients' %}" class="btn btn-high btn-success">Refresh</a>
+</li>
+<li style="list-style: none;margin-right: 5px">
+    <a href="{% url 'attend-all-students-with-qr-scanner' %}" class="btn btn-high btn-success">تسجيل حضور الطلاب</a>
 </li>
 {% endblock %}  

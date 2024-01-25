@@ -1,6 +1,10 @@
 from pathlib import Path
 import os
 from django.utils.html import mark_safe
+
+
+
+
 BASE_DIR              = Path(__file__).resolve().parent.parent
 SECRET_KEY            = 'django-insecure-@imh6cz9cmj99sdj34!ce!7@k+9#emb*_^=qudukfsa&p25'
 DEBUG                 = True
@@ -16,12 +20,10 @@ STATIC_ROOT           = os.path.join(BASE_DIR,'RootStaticFiels')
 STATICFILES_DIRS      = [os.path.join(BASE_DIR,'StatiFilesDirs')]
 MEDIA_URL             = '/media/'
 MEDIA_ROOT            = os.path.join(BASE_DIR, 'mediaRoot')
-CORS_ORIGIN_ALLOW_ALL = True
+
 USE_L10N = True
 USE_TZ = True  
 USE_I18N = True
-# LOGIN_REDIRECT_URL = '/'
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 JAZZMIN_SETTINGS = {
     "language_chooser": False,
@@ -45,48 +47,42 @@ JAZZMIN_SETTINGS = {
         "admin.LogEntry"     : "fas fa-file",
     }
     } 
-    # <i class="fa-solid fa-magnifying-glass"></i>
+
 
 
 INSTALLED_APPS = [
-    # "unfold",
-    # "admin_volt",
-    # "jet",# dont forget the url in the main url 
-    # "semantic_admin",
-"jazzmin",
-# "datetimewidget",
-'django.contrib.admin',
-'django.contrib.auth',
-'django.contrib.contenttypes',
-'django.contrib.sessions',
-'django.contrib.messages',
-'django.contrib.staticfiles',
-
-# 'rest_framework',
-# 'corsheaders',
-'Thoth',
-"config",
-# "livereload"
-# "phone_field",
+    "jazzmin",  
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'Thoth',
+    "config",
+    "lib",
 ]
+
 
 MIDDLEWARE = [
 
-"django.middleware.locale.LocaleMiddleware",
-'django.middleware.security.SecurityMiddleware',
-'django.contrib.sessions.middleware.SessionMiddleware',
-'django.middleware.common.CommonMiddleware',
-'django.middleware.csrf.CsrfViewMiddleware',
-'django.contrib.auth.middleware.AuthenticationMiddleware',
-'django.contrib.messages.middleware.MessageMiddleware',
-'django.middleware.clickjacking.XFrameOptionsMiddleware',
-'corsheaders.middleware.CorsMiddleware',
+    "django.middleware.locale.LocaleMiddleware",
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'main.urls'
 
 TEMPLATES = [
+
 {
+    
 'BACKEND': 'django.template.backends.django.DjangoTemplates',
 'DIRS': [os.path.join(BASE_DIR, "templates")],
 'APP_DIRS': False   ,
